@@ -1,7 +1,7 @@
-<video width="1280" height="720" controls playsinline muted #camera>
+<video width="1280" height="720" autoplay playsinline muted  #camera>
 
 </video>
 
 <h1>isRecording: {{isRecording}}</h1>
-
-<button>start camera</button>
+<h1>timer: {{displaySec}}</h1>
+<button *ngIf="!isCameraOn">start camera</button>
