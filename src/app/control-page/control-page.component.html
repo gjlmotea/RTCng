@@ -1,7 +1,9 @@
 <app-web-rtc
 [isRecording]="isRecording"
+(isCameraOnChange)="onChangeCameraStatus($event)"
+(isRecordingChange)="onChangeRecordingStatus($event)"
 ></app-web-rtc>
 
-<button (click)="startRecording()">開始錄影</button>
-<button (click)="stopRecording()">結束錄影</button>
+<button (click)="startRecording()" *ngIf="isCameraOn && !isRecording">開始錄影</button>
+<button (click)="stopRecording()" *ngIf="isCameraOn && isRecording">結束錄影</button>
 

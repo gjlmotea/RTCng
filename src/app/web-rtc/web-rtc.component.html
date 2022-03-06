@@ -4,4 +4,5 @@
 
 <h1>isRecording: {{isRecording}}</h1>
 <h1>timer: {{displaySec}}</h1>
-<button *ngIf="!isCameraOn">start camera</button>
+<button *ngIf="!isCameraOn" (click)="openCamera()">start camera</button>
+<button *ngIf="isCameraOn" (click)="closeCamera()">close camera</button>

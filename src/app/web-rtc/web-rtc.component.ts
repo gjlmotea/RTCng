@@ -1,4 +1,14 @@
-import {AfterViewInit, Component, ElementRef, Input, OnChanges, OnInit, SimpleChanges, ViewChild} from '@angular/core';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef, EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+  ViewChild
+} from '@angular/core';
 import {Subscription, timer} from 'rxjs';
 
 @Component({
@@ -9,11 +19,15 @@ import {Subscription, timer} from 'rxjs';
 export class WebRtcComponent implements OnInit, OnChanges, AfterViewInit {
   @ViewChild('camera', {static: true}) camera: ElementRef;
   @Input() public isRecording = false;
+  @Output() public isRecordingChange = new EventEmitter<boolean>();
+  @Output() public isCameraOnChange = new EventEmitter<boolean>();
   public isCameraOn = false;
-  public defaultSec = 60;
+  public defaultSec = 5;
   public displaySec = 0;
+  private chunks = [];
+  private recorder: MediaRecorder;
   private countDown$: Subscription;
-
+  private tick = timer(0, 1000); // 初始化時讀秒與後續讀秒
 
   constructor() {
 
@@ -23,6 +37,10 @@ export class WebRtcComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   public ngAfterViewInit(): void {
+    this.openCamera();
+  }
+
+  public openCamera() {
     const constraints = {
       audio: true,
       video: {
@@ -34,31 +52,70 @@ export class WebRtcComponent implements OnInit, OnChanges, AfterViewInit {
     };
 
     // 開啟鏡頭
+    console.log(navigator.mediaDevices.enumerateDevices(), '...???');
     navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
       this.camera.nativeElement.srcObject = stream;
       this.isCameraOn = true;
+      this.isCameraOnChange.emit(true);
     }).catch((err) => {
       console.error(err);
+      this.isCameraOn = false;
+      this.isCameraOnChange.emit(false);
     });
   }
 
+  public closeCamera() {
+    this.camera.nativeElement.srcObject.getVideoTracks().forEach(track => {
+      track.stop();
+    });
+    this.camera.nativeElement.srcObject = null;
+    this.isCameraOn = false;
+    this.isCameraOnChange.emit(false);
+  }
+
+
   public ngOnChanges(changes: SimpleChanges) {
     for (const propName of Object.keys(changes)) {
-      const tick = timer(1000, 1000);
 
-      // 當錄影開始
+      // 當按下錄影鍵
       if (changes.isRecording.currentValue === true && changes.isRecording.previousValue === false) {
-        this.displaySec = this.defaultSec;
-        this.countDown$ = tick.subscribe(sec => {
-          this.displaySec = this.defaultSec - (sec + 1);
-        } );
+        this.startRecording();
       }
 
-      // 當結束錄影
+      // 按下結束錄影鍵
       if (changes.isRecording.currentValue === false && changes.isRecording.previousValue === true) {
-        this.countDown$.unsubscribe();
+        this.stopRecording();
       }
     }
   }
 
+  private startRecording() {
+    console.log('=== start recording ===');
+    this.isRecordingChange.emit(true);
+    this.displaySec = this.defaultSec;
+    this.countDown$ = this.tick.subscribe(sec => {
+      this.displaySec = this.defaultSec - sec;
+      if (this.displaySec <= 0) {
+        this.isRecordingChange.emit(false);
+      }
+    });
+    this.recorder = new MediaRecorder(this.camera.nativeElement.srcObject);
+    this.recorder.start(1000); // 每隔1秒回傳一次串流影片
+    this.recorder.ondataavailable = (event) => {
+      this.chunks.push(event.data);
+    };
+  }
+
+  private stopRecording() {
+    console.log('=== stop recording ===');
+    this.isRecordingChange.emit(false);
+    this.displaySec = 0;
+    this.countDown$.unsubscribe();
+    this.recorder.stop();
+    const blob = new Blob(this.chunks, {type: 'video/mp4; codecs=vp8'});
+    const a = document.createElement('a');
+    a.href = window.URL.createObjectURL(blob);
+    a.download = 'video.mp4';
+    a.click();
+  }
 }

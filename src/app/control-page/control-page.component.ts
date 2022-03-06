@@ -7,6 +7,7 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ControlPageComponent implements OnInit {
   public isRecording = false;
+  public isCameraOn = false;
   constructor() { }
 
   ngOnInit(): void {
@@ -18,5 +19,13 @@ export class ControlPageComponent implements OnInit {
 
   public stopRecording() {
     this.isRecording = false;
+  }
+
+  public onChangeRecordingStatus(bool) {
+    this.isRecording = bool;
+  }
+
+  public onChangeCameraStatus(bool) {
+    this.isCameraOn = bool;
   }
 }
