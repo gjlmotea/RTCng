@@ -115,7 +115,7 @@ export class WebRtcComponent implements OnInit, OnChanges, AfterViewInit {
 
     const blob = new Blob(this.chunks, {type: 'video/mp4; codecs=vp8'});
 
-    const reader = new window.FileReader();
+    const reader = new FileReader();
     reader.readAsDataURL(blob);
     reader.onloadend = (e) => {
       console.log(reader.result);
