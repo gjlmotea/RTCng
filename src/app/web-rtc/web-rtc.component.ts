@@ -52,7 +52,7 @@ export class WebRtcComponent implements OnInit, OnChanges, AfterViewInit {
     };
 
     // 開啟鏡頭
-    console.log(navigator.mediaDevices.enumerateDevices(), '...???');
+    console.log('enumerateDevices: ', navigator.mediaDevices.enumerateDevices());
     navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
       this.camera.nativeElement.srcObject = stream;
       this.isCameraOn = true;
@@ -100,7 +100,7 @@ export class WebRtcComponent implements OnInit, OnChanges, AfterViewInit {
       }
     });
     this.recorder = new MediaRecorder(this.camera.nativeElement.srcObject);
-    this.recorder.start(1000); // 每隔1秒回傳一次串流影片
+    this.recorder.start(100); // 每隔0.1秒回傳一次串流影片
     this.recorder.ondataavailable = (event) => {
       this.chunks.push(event.data);
     };
@@ -112,9 +112,18 @@ export class WebRtcComponent implements OnInit, OnChanges, AfterViewInit {
     this.displaySec = 0;
     this.countDown$.unsubscribe();
     this.recorder.stop();
+
     const blob = new Blob(this.chunks, {type: 'video/mp4; codecs=vp8'});
+
+    const reader = new window.FileReader();
+    reader.readAsDataURL(blob);
+    reader.onloadend = (e) => {
+      console.log(reader.result);
+    };
+
+    // Download File
     const a = document.createElement('a');
-    a.href = window.URL.createObjectURL(blob);
+    a.href = URL.createObjectURL(blob);
     a.download = 'video.mp4';
     a.click();
   }
