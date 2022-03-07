@@ -53,6 +53,15 @@ export class WebRtcComponent implements OnInit, OnChanges, AfterViewInit {
 
     // 開啟鏡頭
     console.log('enumerateDevices: ', navigator.mediaDevices.enumerateDevices());
+    navigator.mediaDevices.enumerateDevices().then(
+      (devices) => {
+        let deviceObjs = [{}];
+        devices.forEach(device => {
+          console.log(device);
+          // 不同設備透過 group ID 來辨識
+        });
+      }
+    );
     navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
       this.camera.nativeElement.srcObject = stream;
       this.isCameraOn = true;
@@ -127,4 +136,11 @@ export class WebRtcComponent implements OnInit, OnChanges, AfterViewInit {
     a.download = 'video.mp4';
     a.click();
   }
+}
+
+class DeviceObj {
+  deviceId: string;
+  groupId: string;
+  kind: string;
+  label: string;
 }
