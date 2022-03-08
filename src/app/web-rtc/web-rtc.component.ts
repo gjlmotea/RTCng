@@ -22,12 +22,12 @@ export class WebRtcComponent implements OnInit, OnChanges, AfterViewInit {
   @Output() public isRecordingChange = new EventEmitter<boolean>();
   @Output() public isCameraOnChange = new EventEmitter<boolean>();
   public isCameraOn = false;
-  public defaultSec = 5;
-  public displaySec = 0;
+  public defaultSec = 60; // 預設錄影秒數
+  public displaySec = 0; // 畫面顯示的倒數秒數
   private chunks = [];
   private recorder: MediaRecorder;
   private countDown$: Subscription;
-  private tick = timer(0, 1000); // 初始化時讀秒與後續讀秒
+  private tick = timer(0, 1000); // tick的初始化時讀秒與後續讀秒
 
   constructor() {
 
@@ -44,24 +44,12 @@ export class WebRtcComponent implements OnInit, OnChanges, AfterViewInit {
     const constraints = {
       audio: true,
       video: {
-        width: {exact: 1280},
-        height: {exact: 720},
-        //   width: { min: 1024, ideal: 1280, max: 1920 },
-        //   height: { min: 576, ideal: 720, max: 1080 },
+        width: {exact: 1280}, // { min: 1024, ideal: 1280, max: 1920 },
+        height: {exact: 720}, // { min: 576, ideal: 720, max: 1080 },
       },
     };
 
     // 開啟鏡頭
-    console.log('enumerateDevices: ', navigator.mediaDevices.enumerateDevices());
-    navigator.mediaDevices.enumerateDevices().then(
-      (devices) => {
-        let deviceObjs = [{}];
-        devices.forEach(device => {
-          console.log(device);
-          // 不同設備透過 group ID 來辨識
-        });
-      }
-    );
     navigator.mediaDevices.getUserMedia(constraints).then((stream) => {
       this.camera.nativeElement.srcObject = stream;
       this.isCameraOn = true;
@@ -99,7 +87,6 @@ export class WebRtcComponent implements OnInit, OnChanges, AfterViewInit {
   }
 
   private startRecording() {
-    console.log('=== start recording ===');
     this.isRecordingChange.emit(true);
     this.displaySec = this.defaultSec;
     this.countDown$ = this.tick.subscribe(sec => {
@@ -109,14 +96,13 @@ export class WebRtcComponent implements OnInit, OnChanges, AfterViewInit {
       }
     });
     this.recorder = new MediaRecorder(this.camera.nativeElement.srcObject);
-    this.recorder.start(100); // 每隔0.1秒回傳一次串流影片
+    this.recorder.start(50); // 每隔50毫秒回傳一次串流影片
     this.recorder.ondataavailable = (event) => {
       this.chunks.push(event.data);
     };
   }
 
   private stopRecording() {
-    console.log('=== stop recording ===');
     this.isRecordingChange.emit(false);
     this.displaySec = 0;
     this.countDown$.unsubscribe();
@@ -127,20 +113,7 @@ export class WebRtcComponent implements OnInit, OnChanges, AfterViewInit {
     const reader = new FileReader();
     reader.readAsDataURL(blob);
     reader.onloadend = (e) => {
-      console.log(reader.result);
+      console.log(reader.result); // 當停止錄影時，輸出base64字串
     };
-
-    // Download File
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = 'video.mp4';
-    a.click();
   }
-}
-
-class DeviceObj {
-  deviceId: string;
-  groupId: string;
-  kind: string;
-  label: string;
 }
