@@ -56,6 +56,7 @@ export class WebRtcComponent implements OnInit, OnChanges, AfterViewInit {
       this.isCameraOnChange.emit(true);
     }).catch((err) => {
       console.error(err);
+      alert('無法取得攝像鏡頭');
       this.isCameraOn = false;
       this.isCameraOnChange.emit(false);
     });

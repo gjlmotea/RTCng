@@ -1,12 +1,5 @@
-<select name="" id="">
-  <option value="" *ngFor=""></option>
-</select>
+<video width="1280" height="720" autoplay playsinline muted  #camera></video>
 
-<video width="1280" height="720" autoplay playsinline muted  #camera>
-
-</video>
-
-<h1>isRecording: {{isRecording}}</h1>
-<h1>timer: {{displaySec}}</h1>
+<br>
 <button *ngIf="!isCameraOn" (click)="openCamera()">start camera</button>
 <button *ngIf="isCameraOn" (click)="closeCamera()">close camera</button>
